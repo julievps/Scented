@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbf8f6">
+  <title>Scented - opdag din næste duft</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fbf8f6;
+      --surface: #fffdfc;
+      --ink: #584440;
+      --muted: #907b74;
+      --line: #eadbd5;
+      --green: #805956;
+      --lime: #c8a572;
+      --coral: #d79d8d;
+      --soft-green: #f4e8e3;
+      --shadow: 0 16px 46px rgba(83, 61, 55, .11);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+    button, input { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+    .app { min-height: 100vh; }
+    .topbar { height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 5.2vw; background: rgba(255,255,255,.83); border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 9px; font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; letter-spacing: 0; }
+    .brand-logo { width: 46px; height: 46px; flex: 0 0 46px; display: block; object-fit: contain; }
+    .topnav { display: flex; gap: 18px; align-items: center; margin-left: 38px; margin-right: auto; }
+    .nav-button { background: none; border: 0; padding: 9px 0; color: var(--muted); font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
+    .nav-button.active { color: var(--ink); border-color: var(--coral); }
+    .signature-nav { color: var(--green); white-space: nowrap; }
+    .settings-button { width: 38px; height: 38px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; background: white; font-size: 18px; color: var(--green); }
+    .top-icon { width: 38px; height: 38px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; background: white; display: grid; place-items: center; color: var(--green); }
+    .search-mark { position: relative; width: 14px; height: 14px; border: 1.8px solid currentColor; border-radius: 50%; }
+    .search-mark::after { content: ''; position: absolute; width: 6px; height: 1.8px; right: -5px; bottom: -2px; background: currentColor; transform: rotate(48deg); transform-origin: left center; }
+    main { width: min(1190px, 90vw); margin: 35px auto 76px; }
+    .welcome { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 25px; }
+    .eyebrow { color: var(--coral); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font: 600 34px/1.15 'Playfair Display', serif; letter-spacing: 0; margin: 7px 0 7px; }
+    .welcome p { color: var(--muted); margin: 0; font-size: 13px; }
+    .quiz-cta { flex: 0 0 auto; border: 0; border-radius: 4px; background: var(--green); color: white; padding: 13px 17px; font-weight: 600; font-size: 12px; transition: transform .18s, background .18s; }
+    .quiz-cta:hover { background: #684744; transform: translateY(-2px); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 24px; align-items: start; }
+    .primary { min-width: 0; }
+    .search-row { display: flex; gap: 10px; margin-bottom: 19px; }
+    .search { flex: 1; height: 45px; border: 1px solid var(--line); border-radius: 4px; background: white; display: flex; align-items: center; padding: 0 13px; gap: 10px; }
+    .search span { color: var(--muted); font-size: 17px; }
+    .search input { border: 0; outline: 0; min-width: 0; width: 100%; color: var(--ink); font-size: 12px; background: transparent; }
+    .filter-button { border: 1px solid var(--line); border-radius: 4px; background: white; padding: 0 15px; color: var(--ink); font-size: 12px; font-weight: 600; }
+    .note-filter-button { border: 1px solid var(--line); border-radius: 4px; background: white; padding: 0 15px; color: var(--ink); font-size: 12px; font-weight: 600; }
+    .filter-button.active, .note-filter-button.active { border-color: var(--green); color: var(--green); background: var(--soft-green); }
+    #filter-button, #note-filter-button { min-height: 45px; }
+    .selected-note-summary { display: flex; flex-wrap: wrap; gap: 6px; margin: -9px 0 14px; }
+    .selected-note-summary:empty { display: none; }
+    .selected-note-summary button { display: flex; align-items: center; gap: 6px; border: 1px solid #eadbd5; border-radius: 3px; padding: 5px 8px; background: #fff; color: var(--green); font-size: 10px; }
+    .profile-view[hidden], #discover-content[hidden] { display: none; }
+    .profile-heading { margin-bottom: 18px; }
+    .profile-heading h2 { margin: 5px 0; font: 600 25px 'Playfair Display', serif; }
+    .profile-heading p { color: var(--muted); font-size: 12px; }
+    .profile-tabs { display: flex; gap: 7px; padding: 0 0 13px; border-bottom: 1px solid var(--line); }
+    .profile-tab { border: 1px solid var(--line); border-radius: 3px; background: white; padding: 8px 12px; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .profile-tab.active { border-color: var(--green); background: var(--green); color: white; }
+    .profile-section { margin-top: 26px; }
+    .profile-section h3 { margin: 0 0 10px; font-size: 14px; }
+    .profile-reviews { display: grid; gap: 9px; }
+    .profile-review { border-top: 1px solid var(--line); padding: 12px 0; display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 5px 12px; }
+    .profile-review strong { font: 600 16px 'Playfair Display', serif; }
+    .profile-review small { color: var(--muted); font-size: 10px; }
+    .profile-review p { grid-column: 1 / -1; margin: 3px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; white-space: pre-wrap; }
+    .profile-review .rating { grid-column: 2; grid-row: 1 / span 2; justify-self: end; color: #bd985f; }
+    .profile-empty { padding: 20px 0; color: var(--muted); font-size: 12px; }
+    .catalog-image { width: 100%; display: block; padding: 0; border: 0; background: transparent; text-align: inherit; }
+    .catalog-image:focus-visible, .perfume-title-button:focus-visible { outline: 3px solid var(--coral); outline-offset: -3px; }
+    .perfume-title-button { max-width: 100%; display: block; overflow: hidden; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; text-overflow: ellipsis; white-space: nowrap; font: inherit; font-weight: 600; }
+    .detail-copy { color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .family-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 9px 0; }
+    .family-list span { border: 1px solid var(--line); border-radius: 3px; padding: 5px 8px; color: var(--green); font-size: 10px; }
+    .community-average { display: flex; align-items: baseline; gap: 8px; border-top: 1px solid var(--line); padding: 12px 0; }
+    .community-average strong { color: var(--ink); font: 600 22px 'Playfair Display',serif; }
+    .community-average span { color: var(--muted); font-size: 10px; }
+    .review-list { display: grid; gap: 12px; margin-top: 14px; }
+    .community-review { border-top: 1px solid var(--line); padding-top: 11px; }
+    .community-review header { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; font-size: 11px; }
+    .community-review p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .search-results { display: grid; gap: 4px; max-height: 58vh; overflow: auto; margin-top: 14px; }
+    .search-result-heading { margin: 9px 0 3px; color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .search-result { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; padding: 10px; border: 1px solid var(--line); border-radius: 3px; background: white; text-align: left; }
+    .search-result strong { font: 600 14px 'Playfair Display',serif; }
+    .search-result small { color: var(--muted); font-size: 10px; }
+    .search-result span { grid-column: 1 / -1; color: var(--muted); font-size: 10px; }
+    .search-empty { color: var(--muted); font-size: 12px; padding: 14px 0; }
+    .option-list { display: grid; gap: 7px; max-height: 210px; overflow: auto; padding: 2px; }
+    .option-item { display: flex; align-items: center; gap: 9px; min-height: 35px; border-bottom: 1px solid #efe4df; font-size: 12px; }
+    .option-item input { accent-color: var(--green); }
+    .filter-search { width: 100%; height: 39px; margin: 8px 0; border: 1px solid var(--line); border-radius: 4px; padding: 0 10px; }
+    .filter-section { padding: 13px 0; border-top: 1px solid var(--line); }
+    .filter-section h3 { margin: 0 0 9px; font-size: 12px; }
+    .price-range { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .price-range label { display: grid; gap: 5px; color: var(--muted); font-size: 10px; }
+    .price-range input { width: 100%; height: 38px; border: 1px solid var(--line); border-radius: 4px; padding: 0 9px; }
+    .filter-help { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .modal-actions .modal-action { margin-top: 0; }
+    .secondary-action { border: 1px solid var(--line); border-radius: 4px; background: white; padding: 0 14px; color: var(--green); font-size: 11px; font-weight: 700; }
+    .filter-details { border-top: 1px solid var(--line); margin-top: 14px; }
+    .filter-details summary { cursor: pointer; padding: 11px 0; color: var(--green); font-size: 12px; font-weight: 700; }
+    .filter-count { color: var(--muted); font-size: 10px; font-weight: 400; }
+    .note-options { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; max-height: 48vh; overflow: auto; padding: 5px 1px; }
+    .note-option { display: flex; align-items: center; gap: 7px; min-width: 0; border: 1px solid var(--line); border-radius: 3px; background: #fff; padding: 8px; color: var(--ink); font-size: 10px; }
+    .note-option input { flex: 0 0 auto; accent-color: var(--green); }
+    .profile-actions { display: flex; gap: 8px; align-items: center; }
+    .clear-data-button { border: 1px solid #e5c6bf; border-radius: 4px; background: white; color: #8c554d; padding: 10px; font-size: 11px; font-weight: 700; }
+    .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 22px 0 11px; }
+    .section-head h2 { font-size: 15px; margin: 0; font-weight: 700; }
+    .catalog-note { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 5px 0 0; }
+    .catalog-note a { color: var(--green); font-weight: 600; }
+    .section-head button { border: 0; background: none; color: var(--green); font-size: 11px; font-weight: 700; }
+    .chips { display: flex; gap: 7px; overflow-x: auto; padding: 1px 0 8px; scrollbar-width: none; }
+    .chip { flex: 0 0 auto; border: 1px solid #eadbd5; background: transparent; color: #806c66; padding: 7px 12px; border-radius: 99px; font-size: 10px; }
+    .chip.active { border-color: var(--green); background: var(--green); color: white; }
+    .perfume-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+    .perfume-card { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; min-width: 0; transition: transform .18s, box-shadow .18s; }
+    .perfume-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(32,41,35,.08); }
+    .bottle-image { width: 100%; aspect-ratio: 1.23 / 1; object-fit: cover; display: block; background: #f2e8e3; }
+    .bottle-image.bottle-drawing { object-fit: cover; padding: 0; background: none; }
+    .image-placeholder { display: block; overflow: hidden; padding: 0; background: #f4e8e3; }
+    .scent-illustration { display: block; width: 100%; height: 100%; }
+    .card-content { padding: 12px 12px 11px; }
+    .brand-name { color: var(--muted); font-size: 9px; margin-bottom: 3px; }
+    .perfume-title { font: 600 16px/1.25 'Playfair Display', serif; margin: 0 0 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rating { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+    .rating strong { color: var(--ink); }
+    .star { color: #bd985f; font-size: 12px; }
+    .notes { display: flex; gap: 5px; flex-wrap: wrap; margin: 10px 0 12px; }
+    .note { background: #f2e8e4; color: #75605a; border-radius: 2px; padding: 4px 6px; font-size: 9px; }
+    .card-actions { border-top: 1px solid #efe4df; display: flex; justify-content: space-between; padding-top: 9px; }
+    .text-button { border: 0; padding: 1px 0; background: none; font-size: 10px; color: var(--green); font-weight: 700; }
+    .text-button.save { color: var(--muted); }
+    .text-button.save.saved { color: var(--coral); }
+    .sidebar { display: grid; gap: 14px; }
+    .feature-panel { position: relative; overflow: hidden; min-height: 220px; padding: 18px; border: 1px solid #eadbd5; border-radius: 5px; background: linear-gradient(145deg, #f7e9e4, #fffaf7 74%); color: var(--ink); }
+    .feature-panel::after { content: ''; position: absolute; width: 150px; height: 150px; right: -51px; bottom: -44px; border-radius: 50%; border: 1px solid rgba(200,165,114,.42); box-shadow: 0 0 0 17px rgba(200,165,114,.08), 0 0 0 34px rgba(215,157,141,.06); }
+    .feature-panel .eyebrow { color: #aa766c; }
+    .feature-panel h2 { font: 600 22px/1.16 'Playfair Display', serif; max-width: 210px; margin: 13px 0 9px; }
+    .feature-panel p { max-width: 205px; color: var(--muted); font-size: 11px; line-height: 1.6; margin: 0 0 16px; }
+    .feature-panel button { background: var(--green); color: white; border: 0; border-radius: 3px; padding: 10px 12px; font-size: 10px; font-weight: 700; position: relative; z-index: 1; }
+    .community-panel { background: white; border: 1px solid var(--line); border-radius: 5px; padding: 16px; }
+    .community-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px; }
+    .community-title h3 { font-size: 12px; margin: 0; }
+    .community-title span { color: var(--muted); font-size: 9px; }
+    .review { display: grid; grid-template-columns: 29px 1fr; gap: 9px; padding: 11px 0; border-top: 1px solid #efe4df; }
+    .review:first-of-type { border-top: 0; }
+    .review-avatar { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #f1d9d1; font-size: 10px; font-weight: 700; color: #75564e; }
+    .review:nth-of-type(3) .review-avatar { background: #e9d9cf; color: #75564e; }
+    .review b { display: block; font-size: 10px; margin: 1px 0 3px; }
+    .review p { color: var(--muted); font-size: 10px; line-height: 1.45; margin: 0; }
+    .review small { color: #aa766c; font-weight: 700; }
+    .empty { display: none; padding: 24px 10px; text-align: center; color: var(--muted); font-size: 12px; grid-column: 1 / -1; }
+    .modal-backdrop { display: none; position: fixed; inset: 0; z-index: 5; align-items: center; justify-content: center; padding: 18px; background: rgba(22,32,26,.48); }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: min(440px, 100%); max-height: 90vh; overflow: auto; position: relative; background: white; border-radius: 6px; padding: 27px; box-shadow: var(--shadow); animation: rise .22s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .close { position: absolute; top: 13px; right: 14px; border: 0; background: #f4e9e5; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; }
+    .modal h2 { font: 600 25px/1.2 'Playfair Display', serif; margin: 10px 28px 8px 0; }
+    .modal p { color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .quiz-progress { height: 4px; background: #efe3de; margin: 17px 0 22px; }
+    .quiz-progress span { height: 100%; display: block; width: 33%; background: var(--coral); transition: width .2s; }
+    .answers { display: grid; gap: 8px; margin-top: 17px; }
+    .answer { border: 1px solid var(--line); background: white; border-radius: 4px; text-align: left; padding: 13px; font-size: 12px; transition: border .15s, background .15s; }
+    .answer:hover { border-color: var(--coral); background: #faf0ec; }
+    .answer.selected { border-color: var(--green); background: #f3e6e1; }
+    .answer strong { display: block; margin-bottom: 3px; }
+    .answer span { color: var(--muted); font-size: 10px; }
+    .quiz-back { border: 0; background: none; color: var(--green); padding: 12px 0 0; font-size: 11px; font-weight: 700; }
+    .optional-field { display: grid; gap: 7px; margin-top: 17px; color: var(--ink); font-size: 11px; font-weight: 700; }
+    .optional-field span { color: var(--muted); font-size: 10px; font-weight: 400; }
+    .optional-field input { width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 4px; padding: 0 11px; }
+    .quiz-note { margin: 12px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .recommendation { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .recommendation strong { font: 600 16px 'Playfair Display', serif; }
+    .recommendation small { grid-column: 1; color: var(--muted); font-size: 10px; }
+    .recommendation .notes { grid-column: 1; margin: 4px 0 0; }
+    .recommendation button { grid-column: 2; grid-row: 1 / span 3; align-self: center; border: 1px solid var(--line); border-radius: 3px; background: white; padding: 8px 10px; color: var(--green); font-size: 10px; font-weight: 700; }
+    .modal.modal-wide { width: min(900px, 100%); }
+    .match-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin: 18px 0; }
+    .match-card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: white; }
+    .match-image-button { display: block; width: 100%; padding: 0; border: 0; background: #e5ebe3; }
+    .match-image-button img { display: block; width: 100%; aspect-ratio: 1.15 / 1; object-fit: cover; }
+    .match-image-button img.bottle-drawing { object-fit: cover; padding: 0; background: none; }
+    .match-image-button .image-placeholder { width: 100%; aspect-ratio: 1.15 / 1; }
+    .match-image-button:focus-visible { outline: 3px solid var(--coral); outline-offset: -3px; }
+    .match-card-content { padding: 11px; }
+    .match-card h3 { font: 600 17px/1.2 'Playfair Display', serif; margin: 0 0 3px; }
+    .match-card-brand { color: var(--muted); font-size: 10px; }
+    .match-score { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin: 9px 0; color: #d49439; font-size: 15px; }
+    .match-score .empty-stars { color: #d8ddd6; }
+    .match-score strong { color: var(--ink); font: 600 10px 'DM Sans', sans-serif; margin-left: 5px; }
+    .match-top-label { color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; margin: 10px 0 5px; }
+    .match-card .notes { margin: 0; }
+    .match-card .save-recommendation { width: 100%; border: 1px solid var(--line); border-radius: 3px; background: white; padding: 8px; color: var(--green); font-size: 10px; font-weight: 700; margin-top: 11px; }
+    .detail-hero { width: 100%; max-height: 320px; aspect-ratio: 2 / 1; object-fit: cover; background: #e5ebe3; border-radius: 4px; }
+    .detail-hero.bottle-drawing { object-fit: contain; padding: 14px; background: linear-gradient(145deg, #f8ede9, #f1dfda); }
+    .detail-hero.image-placeholder { display: grid; max-height: none; }
+    .detail-heading { margin: 17px 0 20px; }
+    .detail-heading h2 { margin: 5px 0; }
+    .note-level { padding: 15px 0; border-top: 1px solid var(--line); }
+    .note-level h3 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; }
+    .note-origin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+    .note-origin { min-width: 0; margin: 0; text-align: center; }
+    .note-picture { position: relative; overflow: hidden; width: 100%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 3px; background: #edf0e8; }
+    .note-picture > span { font-size: 28px; }
+    .note-picture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .note-picture img[hidden] { display: none; }
+    .note-origin figcaption { margin-top: 5px; color: var(--ink); font-size: 10px; }
+    .detail-disclaimer { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 15px 0 0; }
+    .detail-actions { display: flex; gap: 10px; align-items: center; }
+    .detail-actions .modal-action { flex: 1; }
+    .detail-back { border: 0; background: none; color: var(--green); font-size: 11px; font-weight: 700; }
+    .modal-action:disabled { opacity: .45; cursor: not-allowed; }
+    .modal-action { width: 100%; border: 0; border-radius: 4px; background: var(--green); color: white; padding: 12px; font-size: 12px; font-weight: 700; margin-top: 14px; }
+    .stars-picker { display: flex; gap: 9px; font-size: 30px; color: #d8ddd6; margin: 16px 0; }
+    .stars-picker button { border: 0; background: none; color: inherit; padding: 0; font-size: inherit; }
+    .stars-picker button.selected { color: #d49439; }
+    .modal textarea { width: 100%; min-height: 90px; resize: vertical; border: 1px solid var(--line); border-radius: 4px; padding: 11px; font: 12px 'DM Sans', sans-serif; }
+    .toast { position: fixed; left: 50%; bottom: 25px; z-index: 10; transform: translate(-50%, 15px); background: var(--ink); color: white; border-radius: 4px; padding: 11px 16px; font-size: 11px; opacity: 0; pointer-events: none; transition: all .2s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .mobile-nav { display: none; }
+    @media (max-width: 900px) {
+      main { width: min(760px, 92vw); margin-top: 27px; }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: 1fr 1fr; }
+      .feature-panel { min-height: 204px; }
+      .topnav { margin-left: 35px; gap: 20px; }
+    }
+    @media (max-width: 600px) {
+      .topbar { height: 61px; padding: 0 5vw; }
+      .topnav { display: none; }
+      .profile { padding-right: 7px; font-size: 0; border: 0; background: none; }
+      main { width: 90vw; margin: 24px auto 92px; }
+      .welcome { align-items: start; margin-bottom: 18px; }
+      h1 { font-size: 29px; }
+      .welcome p { max-width: 240px; line-height: 1.5; }
+      .quiz-cta { padding: 11px 10px; font-size: 10px; margin-top: 12px; }
+      .search-row { gap: 7px; }
+      .filter-button { padding: 0 11px; }
+      .perfume-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .card-content { padding: 10px; }
+      .perfume-title { font-size: 15px; }
+      .sidebar { grid-template-columns: 1fr; }
+      .feature-panel { min-height: 190px; }
+      .community-panel { margin-bottom: 3px; }
+      .match-grid { grid-template-columns: 1fr; }
+      .match-card { display: grid; grid-template-columns: 105px minmax(0, 1fr); }
+      .match-image-button, .match-image-button img { height: 100%; min-height: 150px; aspect-ratio: auto; }
+      .match-card-content { padding: 10px; }
+      .detail-hero { aspect-ratio: 1.4 / 1; }
+      .note-origin-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+      .topbar { gap: 8px; }
+      .topnav { margin: 0; }
+      .settings-button { width: 34px; height: 34px; }
+      .top-icon { width: 34px; height: 34px; }
+      .note-options { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .search-row { display: grid; grid-template-columns: 1fr 1fr; }
+      .search { grid-column: 1 / -1; }
+      .filter-button, .note-filter-button { min-height: 40px; }
+      .mobile-nav { position: fixed; display: flex; bottom: 0; left: 0; right: 0; z-index: 3; height: 65px; background: rgba(255,255,255,.97); border-top: 1px solid var(--line); justify-content: space-around; align-items: center; padding: 0 3px env(safe-area-inset-bottom); }
+      .mobile-nav button { border: 0; background: none; display: grid; justify-items: center; gap: 3px; color: var(--muted); font-size: 8px; }
+      .mobile-nav button span:first-child { font-size: 17px; line-height: 1; }
+      .mobile-nav button.active { color: var(--green); font-weight: 700; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><img class="brand-logo" src="Logo%201.jpg" alt=""><span>Scented</span></div>
+      <nav class="topnav" aria-label="Hovedmenu">
+        <button class="nav-button active" data-view="profile">Profil</button>
+        <button class="nav-button" data-view="discover">Udforsk</button>
+        <button class="nav-button signature-nav" data-action="quiz">Find din nye signaturduft</button>
+      </nav>
+      <button class="top-icon" type="button" data-action="search" aria-label="Søg" title="Søg"><span class="search-mark" aria-hidden="true"></span></button>
+      <button class="settings-button" type="button" data-action="settings" aria-label="Indstillinger" title="Indstillinger">⚙</button>
+    </header>
+    <main>
+      <section class="welcome">
+        <div>
+          <div class="eyebrow">Dit duftfællesskab</div>
+          <h1 id="page-title">Opdag en verden af dufte</h1>
+          <p id="page-subtitle">Udforsk parfumer, noter og nye favoritter fra duftfællesskabet.</p>
+        </div>
+        <button class="quiz-cta" data-action="quiz">Find din nye signaturduft <span aria-hidden="true">→</span></button>
+      </section>
+      <div class="layout">
+        <section class="primary" aria-label="Parfumer">
+          <div id="discover-content">
+            <div class="search-row">
+              <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Søg på parfume, mærke eller note" aria-label="Søg på parfume, mærke eller note"></label>
+              <button class="filter-button" id="filter-button">Filtrer</button>
+              <button class="note-filter-button" id="note-filter-button">Vælg duftnoter</button>
+            </div>
+            <div class="selected-note-summary" id="selected-note-summary"></div>
+            <div class="section-head"><div><h2 id="list-title">100 fællesskabsfavoritter</h2><p class="catalog-note">Et urangeret udvalg inspireret af <a href="https://www.fragrantica.com/awards2025/" target="_blank" rel="noreferrer">Fragrantica Awards 2025</a> og <a href="https://www.fragrantica.com/awards2024/" target="_blank" rel="noreferrer">all-time-favoritter</a>. Ikke en salgsrangliste.</p></div><button id="count-label">100 dufte</button></div>
+            <div class="chips" role="group" aria-label="Filtrer efter dufttype">
+              <button class="chip active" data-filter="Alle">Alle</button>
+              <button class="chip" data-filter="Sød">Sød</button>
+              <button class="chip" data-filter="Frisk">Frisk</button>
+              <button class="chip" data-filter="Blomstret">Blomstret</button>
+              <button class="chip" data-filter="Træagtig">Træagtig</button>
+              <button class="chip" data-filter="Krydret">Krydret</button>
+            </div>
+            <div class="perfume-grid" id="perfume-grid"></div>
+          </div>
+          <section class="profile-view" id="profile-view" hidden aria-label="Min profil">
+            <header class="profile-heading"><div class="eyebrow">Scented</div><h2 id="profile-view-title">Mine anmeldelser</h2><p>Dine ratings, anmeldelser og favoritter fra denne browser.</p></header>
+            <div class="profile-tabs" role="tablist" aria-label="Profilvisning"><button class="profile-tab active" data-profile-tab="reviews" role="tab" aria-selected="true">Mine anmeldelser</button><button class="profile-tab" data-profile-tab="favorites" role="tab" aria-selected="false">Favoritter</button></div>
+            <section id="profile-reviews-panel" role="tabpanel"><div class="profile-reviews" id="profile-reviews"></div><section class="profile-section"><h3>Forslag ud fra dine anmeldelser</h3><p class="filter-help" id="profile-suggestion-copy">Når du anmelder parfumer, finder Scented dufte med lignende noter og duftfamilier.</p><div class="perfume-grid" id="profile-suggestions"></div></section></section>
+            <section id="profile-favorites-panel" role="tabpanel" hidden><h3>Favoritter</h3><div class="perfume-grid" id="profile-favorites"></div></section>
+          </section>
+        </section>
+        <aside class="sidebar">
+          <section class="feature-panel">
+            <div class="eyebrow">2 minutter · 8 spørgsmål</div>
+            <h2>Hvilken duft passer til dit næste øjeblik?</h2>
+            <p>Fra sød bytur til krydret middag. Find din retning med en lille dufttest.</p>
+            <button data-action="quiz">Find din nye signaturduft <span aria-hidden="true">→</span></button>
+          </section>
+          <section class="community-panel">
+            <div class="community-title"><h3>Eksempelanmeldelser</h3><span>Demotekster</span></div>
+            <article class="review"><div class="review-avatar">M</div><div><b>Maja · <span class="star">★</span> 5</b><p>“Blød vanilje uden at blive for sød. Perfekt til en lang aften.”<br><small>Vanilla 28</small></p></div></article>
+            <article class="review"><div class="review-avatar">A</div><div><b>Anders · <span class="star">★</span> 4</b><p>“Frisk citrus først, så en varm træagtig base. Holder hele dagen.”<br><small>Wood Sage & Sea Salt</small></p></div></article>
+          </section>
+        </aside>
+      </div>
+    </main>
+    <nav class="mobile-nav" aria-label="Mobilmenu">
+      <button class="active" data-view="profile"><span>◉</span><span>Profil</span></button>
+      <button data-view="discover"><span>⌕</span><span>Udforsk</span></button>
+      <button data-action="quiz"><span>✳</span><span>Signaturduft</span></button>
+    </nav>
+  </div>
+  <div class="modal-backdrop" id="modal-backdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="close" id="modal-close" aria-label="Luk">×</button>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="duftdata.js"></script>
+  <script>
+    const perfumes = window.duftdata.map((perfume) => ({
+      ...perfume,
+      rating: null,
+      reviews: 0,
+      image: perfume.productImage || perfume.illustration || null,
+      cardIllustration: perfume.cardIllustration || null,
+      imageIsIllustration: !perfume.productImage && Boolean(perfume.illustration)
+    }));
+    const communityReviews = [
+      { perfumeId: 3, user: 'Maja', rating: 5, text: 'Blød vanilje uden at blive for sød. Perfekt til en lang aften.', demo: true },
+      { perfumeId: 2, user: 'Anders', rating: 4, text: 'Frisk citrus først, så en varm træagtig base. Holder hele dagen.', demo: true }
+    ];
+    function readStoredMap(key) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) || '{}');
+        return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      } catch {
+        return {};
+      }
+    }
+    function escapeHtml(value = '') {
+      return String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+    }
+    function readStoredSet(key) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return new Set(Array.isArray(value) ? value.map(Number) : []);
+      } catch {
+        return new Set();
+      }
+    }
+    const state = {
+      filter: 'Alle',
+      query: '',
+      view: 'discover',
+      profileTab: 'reviews',
+      saved: readStoredSet('scented.favorites'),
+      ratings: readStoredMap('scented.ratings'),
+      reviews: readStoredMap('scented.reviews'),
+      filters: { minPrice: 0, maxPrice: 2000, brands: [], families: [] },
+      selectedNotes: [],
+      sort: 'curated'
+    };
+    const grid = document.getElementById('perfume-grid');
+    const profileGrid = document.getElementById('profile-suggestions');
+    const backdrop = document.getElementById('modal-backdrop');
+    const modalContent = document.getElementById('modal-content');
+    const noteImageCache = new Map();
+    let lastRecommendations = [];
+    let toastTimer;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+    function saveUserData() {
+      try {
+        localStorage.setItem('scented.ratings', JSON.stringify(state.ratings));
+        localStorage.setItem('scented.reviews', JSON.stringify(state.reviews));
+        localStorage.setItem('scented.favorites', JSON.stringify([...state.saved]));
+      } catch {
+        showToast('Kunne ikke gemme lokalt i denne browser');
+      }
+    }
+    function communityRatingFor(perfumeId) {
+      const reviews = communityReviews.filter((review) => review.perfumeId === perfumeId);
+      if (!reviews.length) return null;
+      return { average: reviews.reduce((total, review) => total + review.rating, 0) / reviews.length, count: reviews.length };
+    }
+    function updateFilterButtons() {
+      const filterCount = state.filters.brands.length + state.filters.families.length +
+        (state.filters.minPrice > 0 || state.filters.maxPrice < 2000 ? 1 : 0);
+      const noteCount = state.selectedNotes.length;
+      const filterButton = document.getElementById('filter-button');
+      const noteButton = document.getElementById('note-filter-button');
+      filterButton.textContent = filterCount ? `Filtrer (${filterCount})` : 'Filtrer';
+      noteButton.textContent = noteCount ? `Vælg duftnoter (${noteCount})` : 'Vælg duftnoter';
+      filterButton.classList.toggle('active', filterCount > 0);
+      noteButton.classList.toggle('active', noteCount > 0);
+      const summary = document.getElementById('selected-note-summary');
+      summary.innerHTML = state.selectedNotes.map((note) => `<button type="button" data-remove-note="${escapeHtml(note)}">${escapeHtml(note)} <span aria-hidden="true">×</span></button>`).join('');
+      summary.querySelectorAll('[data-remove-note]').forEach((button) => button.addEventListener('click', () => {
+        state.selectedNotes = state.selectedNotes.filter((note) => note !== button.dataset.removeNote);
+        updateFilterButtons();
+        render();
+      }));
+    }
+    function perfumeImageMarkup(perfume, className) {
+      const cardScene = ['bottle-image', 'result-image'].includes(className) && perfume.cardIllustration;
+      const image = cardScene || perfume.image;
+      const isIllustration = cardScene || perfume.imageIsIllustration;
+      if (image) {
+        const drawingClass = isIllustration ? ' bottle-drawing' : '';
+        const description = isIllustration ? `Illustreret flakon for ${perfume.name} fra ${perfume.brand}` : `${perfume.name} fra ${perfume.brand}`;
+        return `<img class="${className}${drawingClass}" src="${image}" alt="${description}" data-product-image="${perfume.id}" loading="lazy">`;
+      }
+      return `<div class="${className} image-placeholder" role="img" aria-label="Illustreret, generisk flakon for ${perfume.name}. Noter: ${perfume.notes.slice(0, 3).join(', ')}">${scentIllustrationSvg(perfume)}</div>`;
+    }
+    function scentIllustrationSvg(perfume) {
+      const palettes = {
+        'Sød': ['#f4d8cd', '#e8bcaa', '#663b3e'],
+        'Frisk': ['#deeadb', '#b4cbbc', '#31564b'],
+        'Blomstret': ['#f0dce4', '#e7c2ce', '#744957'],
+        'Træagtig': ['#e5dfce', '#c9c9b5', '#4e5040'],
+        'Krydret': ['#f0ddc5', '#d9aa7f', '#704632']
+      };
+      const family = perfume.types.find((type) => palettes[type]) || 'Blomstret';
+      const [paper, accent, ink] = palettes[family];
+      const id = Number(perfume.id) || 1;
+      const name = escapeSvgText(perfume.name);
+      const notes = perfume.notes.slice(0, 3).map(escapeSvgText);
+      const ornaments = family === 'Frisk'
+        ? `<circle cx="84" cy="102" r="35" fill="${accent}" opacity=".6"/><circle cx="84" cy="102" r="24" fill="${paper}" opacity=".7"/><path d="M70 101h28M84 87v28" stroke="${ink}" stroke-opacity=".4"/><path d="M430 112c-30 4-48 20-56 51 32-5 51-21 56-51zm-17-11c3 30 19 48 49 55-4-31-21-50-49-55z" fill="${accent}" opacity=".7"/>`
+        : family === 'Blomstret'
+          ? `<g fill="${accent}" opacity=".58"><circle cx="83" cy="102" r="13"/><circle cx="83" cy="76" r="12"/><circle cx="108" cy="102" r="12"/><circle cx="83" cy="127" r="12"/><circle cx="58" cy="102" r="12"/></g><circle cx="83" cy="102" r="8" fill="${ink}" opacity=".6"/><path d="M437 105c-21 18-26 40-15 66 23-18 29-40 15-66zm-25 15c-2 27 10 47 35 57 3-27-9-47-35-57z" fill="${accent}" opacity=".5"/>`
+          : family === 'Sød'
+            ? `<circle cx="91" cy="105" r="35" fill="${accent}" opacity=".55"/><circle cx="91" cy="105" r="23" fill="${paper}" opacity=".64"/><path d="M70 100c15-12 28-12 43 0m-42 12c15 12 27 12 42 0" fill="none" stroke="${ink}" stroke-opacity=".4"/><circle cx="433" cy="102" r="26" fill="${accent}" opacity=".45"/>`
+            : `<path d="M65 122c16-38 43-53 81-44-14 38-41 53-81 44zm351-48c28 4 44 20 48 50-29-5-45-21-48-50z" fill="${accent}" opacity=".55"/><path d="M78 117l50-33m351 35-32-26" stroke="${ink}" stroke-opacity=".38"/>`;
+      const bottle = id % 3 === 0
+        ? `<path d="M261 120h38v25c0 10 30 21 36 41l7 125c1 18-12 31-29 31h-104c-17 0-30-13-29-31l7-125c1-20 36-31 36-41v-25h38z" fill="url(#glass-${id})" stroke="${ink}" stroke-width="3"/><path d="M249 107h62v19h-62z" fill="${ink}"/><path d="M254 82h52v25h-52z" rx="5" fill="${accent}" stroke="${ink}" stroke-width="3"/>`
+        : id % 3 === 1
+          ? `<path d="M245 143v-24h70v24l32 26v133c0 15-12 27-27 27h-80c-15 0-27-12-27-27V169l32-26z" fill="url(#glass-${id})" stroke="${ink}" stroke-width="3"/><path d="M253 104h54v36h-54z" fill="${accent}" stroke="${ink}" stroke-width="3"/><path d="M258 83h44v22h-44z" fill="${ink}"/>`
+          : `<path d="M267 132h26v28c0 13 43 27 46 49l10 92c2 17-11 31-28 31h-82c-17 0-30-14-28-31l10-92c3-22 46-36 46-49v-28z" fill="url(#glass-${id})" stroke="${ink}" stroke-width="3"/><path d="M252 111h56v24h-56z" fill="${ink}"/><path d="M258 82h44v29h-44z" fill="${accent}" stroke="${ink}" stroke-width="3"/>`;
+
+      return `<svg class="scent-illustration" viewBox="0 0 500 410" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="paper-${id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${paper}"/><stop offset="1" stop-color="#fbf8f0"/></linearGradient><linearGradient id="glass-${id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${accent}" stop-opacity=".92"/><stop offset=".48" stop-color="#fff" stop-opacity=".68"/><stop offset="1" stop-color="${ink}" stop-opacity=".28"/></linearGradient><filter id="shadow-${id}" x="-.4" y="-.2" width="1.8" height="1.8"><feGaussianBlur stdDeviation="7"/></filter></defs>
+        <rect width="500" height="410" fill="url(#paper-${id})"/><path d="M0 282c93-49 148 4 244-22s157-74 256-17v167H0z" fill="${accent}" opacity=".27"/><path d="M0 321c112-29 175 20 274-7s142-54 226-30v126H0z" fill="#fff" opacity=".34"/>
+        <path d="M82 265c32-38 54-86 54-132m-26 61c-27-3-41-19-42-45 27 1 42 16 42 45zm17-24c25-9 36-28 30-53-25 8-36 27-30 53z" fill="none" stroke="${ink}" stroke-opacity=".32" stroke-width="2"/>${ornaments}
+        <ellipse cx="270" cy="340" rx="100" ry="17" fill="${ink}" opacity=".24" filter="url(#shadow-${id})"/>
+        <g>${bottle}<path d="M232 206h99v75h-99z" fill="#f8f3e9" fill-opacity=".78" stroke="${ink}" stroke-opacity=".48"/><path d="M242 217h79" stroke="${accent}" stroke-width="3"/><text x="281" y="240" text-anchor="middle" fill="${ink}" font-family="Georgia,serif" font-size="${name.length > 19 ? 9 : 11}">${name}</text><text x="281" y="258" text-anchor="middle" fill="${ink}" fill-opacity=".7" font-family="Arial,sans-serif" font-size="7">SCENTED · ${family.toUpperCase()}</text></g>
+        <text x="250" y="35" text-anchor="middle" fill="${ink}" fill-opacity=".72" font-family="Arial,sans-serif" font-size="9" letter-spacing="2">ILLUSTRERET DUFTPORTRÆT</text>
+        <text x="250" y="385" text-anchor="middle" fill="${ink}" fill-opacity=".72" font-family="Arial,sans-serif" font-size="9">${notes.join('  ·  ')}</text>
+      </svg>`;
+    }
+    function escapeSvgText(value = '') {
+      return String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' })[character]);
+    }
+    function replaceWithScentPortrait(image) {
+      const perfume = perfumes.find((item) => item.id === Number(image.dataset.productImage));
+      if (!perfume) return;
+      const portrait = { ...perfume, image: null };
+      image.replaceWith(document.createRange().createContextualFragment(perfumeImageMarkup(portrait, image.className)));
+    }
+    function visiblePerfumes() {
+      return perfumes.filter((perfume) => {
+        const matchesType = state.filter === 'Alle' || perfume.types.includes(state.filter);
+        const text = `${perfume.brand} ${perfume.name} ${perfume.notes.join(' ')} ${perfume.types.join(' ')}`.toLowerCase();
+        const matchesQuery = text.includes(state.query.toLowerCase());
+        const matchesShelf = state.view !== 'shelf' || state.saved.has(perfume.id);
+        const matchesBrand = !state.filters.brands.length || state.filters.brands.includes(perfume.brand);
+        const matchesFamily = !state.filters.families.length || state.filters.families.some((family) => perfume.types.includes(family));
+        const matchesNotes = !state.selectedNotes.length || state.selectedNotes.some((note) => perfume.notes.includes(note));
+        const price = Number(perfume.price);
+        const matchesPrice = !Number.isFinite(price) || (price >= state.filters.minPrice && price <= state.filters.maxPrice);
+        return matchesType && matchesQuery && matchesShelf && matchesBrand && matchesFamily && matchesNotes && matchesPrice;
+      }).sort((a, b) => state.sort === 'rating' ? Number(state.ratings[b.id] || 0) - Number(state.ratings[a.id] || 0) : a.id - b.id);
+    }
+    function bindPerfumeCards(container) {
+      container.querySelectorAll('[data-open-perfume]').forEach((button) => button.addEventListener('click', () => openPerfumeDetail(Number(button.dataset.openPerfume))));
+      container.querySelectorAll('[data-save]').forEach((button) => button.addEventListener('click', () => toggleSave(Number(button.dataset.save))));
+      container.querySelectorAll('[data-rate]').forEach((button) => button.addEventListener('click', () => openRating(Number(button.dataset.rate))));
+      container.querySelectorAll('[data-product-image]').forEach((image) => image.addEventListener('error', () => replaceWithScentPortrait(image), { once: true }));
+    }
+    function renderPerfumeCards(container, items, emptyMessage = 'Ingen parfumer matcher dine valg.') {
+      if (!items.length) {
+        container.innerHTML = `<div class="empty" style="display:block">${escapeHtml(emptyMessage)}</div>`;
+        return;
+      }
+      container.innerHTML = items.map((perfume) => {
+        const userRating = state.ratings[perfume.id];
+        const saved = state.saved.has(perfume.id);
+        const communityRating = communityRatingFor(perfume.id);
+        return `<article class="perfume-card">
+          <button class="catalog-image" type="button" data-open-perfume="${perfume.id}" aria-label="Se detaljer om ${escapeHtml(perfume.name)}">${perfumeImageMarkup(perfume, 'bottle-image')}</button>
+          <div class="card-content">
+            <div class="brand-name">${perfume.brand}</div>
+            <h3 class="perfume-title" title="${escapeHtml(perfume.name)}"><button class="perfume-title-button" type="button" data-open-perfume="${perfume.id}">${escapeHtml(perfume.name)}</button></h3>
+            <div class="rating">${communityRating ? `<span class="star" aria-hidden="true">★</span><strong>${communityRating.average.toFixed(1)}</strong><span>demo-gennemsnit (${communityRating.count})</span>` : userRating ? `<span class="star" aria-hidden="true">★</span><strong>${escapeHtml(userRating)}</strong><span>din rating</span>` : '<span>Ingen ratings endnu</span>'}</div>
+            <div class="notes">${perfume.notes.map((note) => `<span class="note">${note}</span>`).join('')}</div>
+            <div class="card-actions"><button class="text-button" data-rate="${perfume.id}">Anmeld</button><button class="text-button save ${saved ? 'saved' : ''}" data-save="${perfume.id}" aria-pressed="${saved}">${saved ? 'Gemt ♥' : '♡ Gem'}</button></div>
+          </div>
+        </article>`;
+      }).join('');
+      bindPerfumeCards(container);
+    }
+    function profileSuggestions() {
+      const reviewed = perfumes.filter((perfume) => state.ratings[perfume.id]);
+      if (!reviewed.length) return [];
+      const anchors = reviewed.filter((perfume) => Number(state.ratings[perfume.id]) >= 4);
+      const sources = anchors.length ? anchors : reviewed;
+      return perfumes.filter((perfume) => !state.ratings[perfume.id]).map((perfume) => {
+        const score = sources.reduce((total, source) => {
+          const weight = Math.max(.5, Number(state.ratings[source.id]) - 2);
+          const noteOverlap = perfume.notes.filter((note) => source.notes.includes(note)).length;
+          const familyOverlap = perfume.types.filter((type) => source.types.includes(type)).length;
+          return total + (noteOverlap * 3 + familyOverlap) * weight;
+        }, 0);
+        return { perfume, score };
+      }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score).slice(0, 3).map((item) => item.perfume);
+    }
+    function renderProfile() {
+      const reviewContainer = document.getElementById('profile-reviews');
+      const reviewed = perfumes.filter((perfume) => state.ratings[perfume.id]).sort((a, b) => a.name.localeCompare(b.name, 'da'));
+      document.getElementById('profile-view-title').textContent = state.profileTab === 'favorites' ? 'Favoritter' : 'Mine anmeldelser';
+      document.getElementById('profile-reviews-panel').hidden = state.profileTab !== 'reviews';
+      document.getElementById('profile-favorites-panel').hidden = state.profileTab !== 'favorites';
+      document.querySelectorAll('[data-profile-tab]').forEach((button) => {
+        const selected = button.dataset.profileTab === state.profileTab;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', String(selected));
+      });
+      reviewContainer.innerHTML = reviewed.length ? reviewed.map((perfume) => `
+        <article class="profile-review"><strong>${escapeHtml(perfume.name)}</strong><small>${escapeHtml(perfume.brand)}</small><div class="rating"><span class="star" aria-hidden="true">★</span> ${escapeHtml(state.ratings[perfume.id])}/5</div><p>${escapeHtml(state.reviews[perfume.id] || 'Du har givet en rating uden tekst.')}</p></article>`).join('') : '<p class="profile-empty">Du har ikke anmeldt nogen parfumer endnu. Vælg en duft under Udforsk og tryk Anmeld.</p>';
+      renderPerfumeCards(document.getElementById('profile-favorites'), perfumes.filter((perfume) => state.saved.has(perfume.id)), 'Du har ikke gemt nogen favoritter endnu. Gem en parfume fra Udforsk.');
+      const suggestions = profileSuggestions();
+      document.getElementById('profile-suggestion-copy').textContent = reviewed.length
+        ? 'Forslagene bygger på fælles noter og duftfamilier fra dine højt ratede parfumer.'
+        : 'Når du anmelder parfumer, finder Scented dufte med lignende noter og duftfamilier.';
+      renderPerfumeCards(profileGrid, suggestions, 'Anmeld en parfume for at få personlige forslag.');
+    }
+    function render() {
+      const discoverContent = document.getElementById('discover-content');
+      const profileView = document.getElementById('profile-view');
+      discoverContent.hidden = state.view === 'profile';
+      profileView.hidden = state.view !== 'profile';
+      if (state.view === 'profile') {
+        renderProfile();
+        return;
+      }
+      const items = visiblePerfumes();
+      renderPerfumeCards(grid, items);
+      document.getElementById('count-label').textContent = `${items.length} ${items.length === 1 ? 'duft' : 'dufte'}`;
+      document.getElementById('list-title').textContent = state.view === 'shelf' ? 'Din duftsamling' : (state.sort === 'rating' ? 'Dine ratings' : '100 fællesskabsfavoritter');
+    }
+    function toggleSave(id) {
+      if (state.saved.has(id)) { state.saved.delete(id); showToast('Fjernet fra Favoritter'); }
+      else { state.saved.add(id); showToast('Gemt i Favoritter'); }
+      saveUserData();
+      render();
+    }
+    function openModal(content, wide = false) {
+      modalContent.innerHTML = content;
+      document.querySelector('.modal').classList.toggle('modal-wide', wide);
+      backdrop.classList.add('open');
+      document.getElementById('modal-close').focus();
+    }
+    function closeModal() { backdrop.classList.remove('open'); }
+    function openRating(id) {
+      const perfume = perfumes.find((item) => item.id === id);
+      let selected = state.ratings[id] || 0;
+      openModal(`<div class="eyebrow">Din mening tæller</div><h2 id="modal-title">Anmeld ${perfume.name}</h2><p>Giv en rating og skriv, hvordan du oplever duften. Din anmeldelse vises på Min profil i denne browser.</p>
+        <div class="stars-picker" role="group" aria-label="Vælg antal stjerner">${[1,2,3,4,5].map((number) => `<button type="button" data-star="${number}" aria-label="${number} stjerner" class="${number <= selected ? 'selected' : ''}">★</button>`).join('')}</div>
+        <textarea id="review-text" maxlength="1200" placeholder="Hvad synes du om duften? (valgfrit)">${escapeHtml(state.reviews[id] || '')}</textarea><button class="modal-action" id="save-rating">Gem anmeldelse</button>`);
+      modalContent.querySelectorAll('[data-star]').forEach((button) => button.addEventListener('click', () => {
+        selected = Number(button.dataset.star);
+        modalContent.querySelectorAll('[data-star]').forEach((star) => star.classList.toggle('selected', Number(star.dataset.star) <= selected));
+      }));
+      document.getElementById('save-rating').addEventListener('click', () => {
+        if (!selected) { showToast('Vælg først mellem 1 og 5 stjerner'); return; }
+        state.ratings[id] = selected.toFixed(1);
+        const reviewText = document.getElementById('review-text').value.trim();
+        if (reviewText) state.reviews[id] = reviewText;
+        else delete state.reviews[id];
+        saveUserData();
+        closeModal(); render(); showToast('Din anmeldelse er gemt på denne enhed');
+      });
+    }
+    function openFilters() {
+      const brands = [...new Set(perfumes.map((perfume) => perfume.brand))].sort((a, b) => a.localeCompare(b, 'da'));
+      const families = [...new Set(perfumes.flatMap((perfume) => perfume.types))].sort((a, b) => a.localeCompare(b, 'da'));
+      const brandOptions = brands.map((brand) => `<label class="option-item" data-brand-option="${escapeHtml(brand.toLowerCase())}"><input type="checkbox" name="filter-brand" value="${escapeHtml(brand)}" ${state.filters.brands.includes(brand) ? 'checked' : ''}><span>${escapeHtml(brand)}</span></label>`).join('');
+      const familyOptions = families.map((family) => `<label class="option-item"><input type="checkbox" name="filter-family" value="${escapeHtml(family)}" ${state.filters.families.includes(family) ? 'checked' : ''}><span>${escapeHtml(family)}</span></label>`).join('');
+      openModal(`<div class="eyebrow">Tilpas dit udvalg</div><h2 id="modal-title">Filtrer parfumer</h2>
+        <section class="filter-section"><h3>Prisinterval · kr.</h3><div class="price-range"><label>Fra<input id="filter-min-price" type="number" min="0" max="2000" step="25" value="${state.filters.minPrice}"></label><label>Til<input id="filter-max-price" type="number" min="0" max="2000" step="25" value="${state.filters.maxPrice}"></label></div><p class="filter-help">Demo-kataloget mangler verificerede priser; parfumer uden prisdata bliver vist uanset interval.</p></section>
+        <details class="filter-details" open><summary>Vælg brands <span class="filter-count">${brands.length} brands</span></summary><input id="filter-brand-search" class="filter-search" type="search" placeholder="Søg efter brand"><div class="option-list">${brandOptions}</div></details>
+        <details class="filter-details"><summary>Duftfamilier <span class="filter-count">${families.length} familier</span></summary><div class="option-list">${familyOptions}</div></details>
+        <section class="filter-section"><label class="option-item" for="filter-sort"><strong>Sortering</strong><select id="filter-sort" style="margin-left:auto;border:1px solid var(--line);border-radius:3px;padding:7px;background:white"><option value="curated" ${state.sort === 'curated' ? 'selected' : ''}>Udvalgte</option><option value="rating" ${state.sort === 'rating' ? 'selected' : ''}>Mine ratings</option></select></label></section>
+        <div class="modal-actions"><button class="secondary-action" id="clear-filters">Ryd filtre</button><button class="modal-action" id="apply-filters">Vis parfumer</button></div>`);
+      document.getElementById('filter-brand-search').addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        modalContent.querySelectorAll('[data-brand-option]').forEach((option) => { option.hidden = !option.dataset.brandOption.includes(query); });
+      });
+      document.getElementById('apply-filters').addEventListener('click', () => {
+        const minPrice = Math.max(0, Math.min(2000, Number(document.getElementById('filter-min-price').value) || 0));
+        const maxPrice = Math.max(minPrice, Math.min(2000, Number(document.getElementById('filter-max-price').value) || 2000));
+        state.filters = {
+          minPrice,
+          maxPrice,
+          brands: [...modalContent.querySelectorAll('[name="filter-brand"]:checked')].map((input) => input.value),
+          families: [...modalContent.querySelectorAll('[name="filter-family"]:checked')].map((input) => input.value)
+        };
+        state.sort = document.getElementById('filter-sort').value;
+        updateFilterButtons();
+        closeModal();
+        render();
+      });
+      document.getElementById('clear-filters').addEventListener('click', () => {
+        state.filters = { minPrice: 0, maxPrice: 2000, brands: [], families: [] };
+        state.filter = 'Alle';
+        state.sort = 'curated';
+        document.querySelectorAll('.chip').forEach((chip) => chip.classList.toggle('active', chip.dataset.filter === 'Alle'));
+        updateFilterButtons();
+        closeModal();
+        render();
+      });
+    }
+    function openNotePicker() {
+      const notes = [...new Set(perfumes.flatMap((perfume) => perfume.notes))].sort((a, b) => a.localeCompare(b, 'da'));
+      const noteOptions = notes.map((note) => `<label class="note-option" data-note-option="${escapeHtml(note.toLowerCase())}"><input type="checkbox" name="selected-note" value="${escapeHtml(note)}" ${state.selectedNotes.includes(note) ? 'checked' : ''}><span>${escapeHtml(note)}</span></label>`).join('');
+      openModal(`<div class="eyebrow">Find din duftretning</div><h2 id="modal-title">Vælg duftnoter</h2><p>Vælg de noter, du holder af. Parfumer med mindst én valgt note vises.</p><input id="note-search" class="filter-search" type="search" placeholder="Søg blandt ${notes.length} noter"><div class="note-options">${noteOptions}</div><div class="modal-actions"><button class="secondary-action" id="clear-notes">Ryd valg</button><button class="modal-action" id="apply-notes">Vis parfumer</button></div>`);
+      document.getElementById('note-search').addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        modalContent.querySelectorAll('[data-note-option]').forEach((option) => { option.hidden = !option.dataset.noteOption.includes(query); });
+      });
+      document.getElementById('apply-notes').addEventListener('click', () => {
+        state.selectedNotes = [...modalContent.querySelectorAll('[name="selected-note"]:checked')].map((input) => input.value);
+        updateFilterButtons();
+        closeModal();
+        render();
+      });
+      document.getElementById('clear-notes').addEventListener('click', () => {
+        state.selectedNotes = [];
+        updateFilterButtons();
+        closeModal();
+        render();
+      });
+    }
+    function openSettings() {
+      openModal(`<div class="eyebrow">Scented</div><h2 id="modal-title">Indstillinger</h2><p>Dine anmeldelser gemmes kun i denne browser og deles ikke med andre i denne demo.</p><div class="profile-actions"><button class="clear-data-button" id="clear-user-data">Slet mine ratings og anmeldelser</button></div>`);
+      document.getElementById('clear-user-data').addEventListener('click', () => {
+        Object.keys(state.ratings).forEach((key) => delete state.ratings[key]);
+        Object.keys(state.reviews).forEach((key) => delete state.reviews[key]);
+        state.saved.clear();
+        try { localStorage.removeItem('scented.ratings'); localStorage.removeItem('scented.reviews'); localStorage.removeItem('scented.favorites'); } catch {}
+        closeModal();
+        render();
+        showToast('Dine lokale anmeldelser er slettet');
+      });
+    }
+    const quizQuestions = [
+      { key: 'occasion', title: 'Hvornår vil du helst bruge duften?', subtitle: 'Tænk på det øjeblik, du glæder dig mest til.', answers: [
+        { title: 'En aften ude', detail: 'Varm og med lidt kant', value: 'night' },
+        { title: 'En almindelig dag', detail: 'Let, behagelig og nem at have på', value: 'everyday' },
+        { title: 'Middag med venner', detail: 'Hyggelig, krydret og nærværende', value: 'dinner' },
+        { title: 'En rolig stund', detail: 'Blød og tæt på huden', value: 'quiet' }
+      ] },
+      { key: 'sweetness', title: 'Hvor sød må duften være?', subtitle: 'Fra sprød og tør til dessert i et glas.', answers: [
+        { title: 'Næsten slet ikke', detail: 'Jeg foretrækker tørre eller friske noter', value: 0 },
+        { title: 'Et lille strejf', detail: 'Bare en blød afrunding', value: 1 },
+        { title: 'Sød, men i balance', detail: 'Vanilje eller frugt må gerne kunne mærkes', value: 2 },
+        { title: 'Gerne rigtig sød', detail: 'Karamel, praliné og gourmand-noter', value: 3 }
+      ] },
+      { key: 'spice', title: 'Hvordan har du det med krydderier?', subtitle: 'Krydderi kan være alt fra et lille glimt til fuld varme.', answers: [
+        { title: 'Helst mildt', detail: 'Bløde noter uden meget krydderi', value: 0 },
+        { title: 'Et strejf er dejligt', detail: 'Lidt peber, kardemomme eller ingefær', value: 1 },
+        { title: 'Giv mig varme', detail: 'Kanel, safran eller krydderier må gerne fylde', value: 2 }
+      ] },
+      { key: 'strength', title: 'Hvor tydelig skal duften være?', subtitle: 'Tænk på din foretrukne intensitet, ikke kun hvor længe den holder.', answers: [
+        { title: 'Diskret', detail: 'Noget jeg selv opdager tæt på huden', value: 0 },
+        { title: 'Midt imellem', detail: 'Kan mærkes, men overtager ikke rummet', value: 1 },
+        { title: 'Markant', detail: 'Jeg kan godt lide en duft med nærvær', value: 2 }
+      ] },
+      { key: 'freshness', title: 'Hvor frisk må den gerne føles?', subtitle: 'Forestil dig den første duft efter et regnskyl.', answers: [
+        { title: 'Meget frisk', detail: 'Citrus, grønne noter eller havluft', value: 2 },
+        { title: 'En god balance', detail: 'Friskhed må gerne møde varme', value: 1 },
+        { title: 'Ikke så frisk', detail: 'Jeg går hellere efter dybe og varme noter', value: 0 }
+      ] },
+      { key: 'floral', title: 'Hvilken rolle skal blomster spille?', subtitle: 'Blomster kan være lyse, pudrede eller næsten umærkelige.', answers: [
+        { title: 'Blomster må gerne være hovedrollen', detail: 'Rose, jasmin eller hvide blomster', value: 2 },
+        { title: 'Bare lidt blomster', detail: 'De må gerne ligge i baggrunden', value: 1 },
+        { title: 'Helst uden blomster', detail: 'Jeg søger andre slags noter', value: 0 }
+      ] },
+      { key: 'woodiness', title: 'Hvilken bund trækker dig mest?', subtitle: 'Det er ofte de dybe noter, man husker bagefter.', answers: [
+        { title: 'Træ og jord', detail: 'Sandeltræ, cedertræ eller vetiver', value: 2 },
+        { title: 'Blød varme', detail: 'Amber, musk eller vanilje', value: 1 },
+        { title: 'Lys og ren', detail: 'Jeg vil helst undgå en tung bund', value: 0 }
+      ] },
+      { key: 'season', title: 'Hvilken sæson eller stemning vælger du?', subtitle: 'Vi bruger det som et lille ekstra hint i matchningen.', answers: [
+        { title: 'Sol og sommer', detail: 'Lyst, luftigt og ubesværet', value: 'warm' },
+        { title: 'Vinter og aftener', detail: 'Omsluttende og varmt', value: 'cold' },
+        { title: 'Hele året', detail: 'En alsidig signaturduft', value: 'all' }
+      ] }
+    ];
+    let quizStep = 0;
+    let quizAnswers = {};
+    let quizFavorite = '';
+    function startQuiz() { quizStep = 0; quizAnswers = {}; quizFavorite = ''; renderQuiz(); }
+    function renderQuiz() {
+      const question = quizQuestions[quizStep];
+      const isFinalQuestion = quizStep === quizQuestions.length - 1;
+      const selectedAnswer = quizAnswers[question.key];
+      openModal(`<div class="eyebrow">Dufttesten · ${quizStep + 1} af ${quizQuestions.length}</div><div class="quiz-progress"><span style="width:${((quizStep + 1) / quizQuestions.length) * 100}%"></span></div><h2 id="modal-title">${question.title}</h2><p>${question.subtitle}</p><div class="answers">${question.answers.map((answer, index) => `<button class="answer ${selectedAnswer === answer.value ? 'selected' : ''}" data-answer-index="${index}" aria-pressed="${selectedAnswer === answer.value}"><strong>${answer.title}</strong><span>${answer.detail}</span></button>`).join('')}</div>${isFinalQuestion ? `<label class="optional-field" for="favorite-perfume">Din yndlingsparfume <span>Valgfrit. Skriv navn eller mærke, så bruger vi den som ekstra inspiration.</span><input id="favorite-perfume" type="text" maxlength="100" placeholder="Fx Libre eller en anden favorit"></label><button class="modal-action" id="show-recommendations" ${selectedAnswer === undefined ? 'disabled' : ''}>Vis mine alternativer</button>` : ''}${quizStep > 0 ? '<button class="quiz-back" id="quiz-back">← Tilbage</button>' : ''}`);
+      const favoriteInput = document.getElementById('favorite-perfume');
+      if (favoriteInput) {
+        favoriteInput.value = quizFavorite;
+        favoriteInput.addEventListener('input', (event) => { quizFavorite = event.target.value; });
+      }
+      modalContent.querySelectorAll('[data-answer-index]').forEach((button) => button.addEventListener('click', () => {
+        quizAnswers[question.key] = question.answers[Number(button.dataset.answerIndex)].value;
+        if (isFinalQuestion) renderQuiz();
+        else { quizStep++; renderQuiz(); }
+      }));
+      document.getElementById('quiz-back')?.addEventListener('click', () => { quizStep--; renderQuiz(); });
+      document.getElementById('show-recommendations')?.addEventListener('click', showQuizResult);
+    }
+    function showQuizResult() {
+      const featuresFor = (perfume) => {
+        const noteText = perfume.notes.join(' ').toLowerCase();
+        const hasType = (type) => perfume.types.includes(type);
+        return {
+          sweetness: hasType('Sød') ? 2 : /vanilje|karamel|praliné|honning|sukker/.test(noteText) ? 1 : 0,
+          spice: hasType('Krydret') ? 2 : /kanel|peber|ingefær|kardemomme|safran/.test(noteText) ? 1 : 0,
+          freshness: hasType('Frisk') ? 2 : /citrus|citron|bergamot|grapefrugt|havnoter/.test(noteText) ? 1 : 0,
+          floral: hasType('Blomstret') ? 2 : /rose|jasmin|tuberose|pæon|magnolia/.test(noteText) ? 1 : 0,
+          woodiness: hasType('Træagtig') ? 2 : /træ|oud|vetiver|patchouli|ceder/.test(noteText) ? 1 : 0,
+          strength: [hasType('Sød'), hasType('Krydret'), hasType('Træagtig')].filter(Boolean).length >= 2 ? 2 : [hasType('Sød'), hasType('Krydret'), hasType('Træagtig')].some(Boolean) ? 1 : 0
+        };
+      };
+      const favoriteText = quizFavorite.trim().toLowerCase();
+      const favorite = favoriteText ? perfumes.find((perfume) => `${perfume.brand} ${perfume.name}`.toLowerCase().includes(favoriteText)) : null;
+      const favoriteTokens = favoriteText.match(/[a-zA-Z0-9æøåÆØÅ]+/g) || [];
+      const occasionTypes = { night: ['Sød', 'Krydret'], everyday: ['Frisk', 'Blomstret'], dinner: ['Krydret', 'Træagtig'], quiet: ['Blomstret', 'Frisk'] };
+      const seasonTypes = { warm: ['Frisk', 'Blomstret'], cold: ['Sød', 'Krydret', 'Træagtig'], all: [] };
+      const recommendations = perfumes.map((perfume) => {
+        const features = featuresFor(perfume);
+        let score = 0;
+        ['sweetness', 'spice', 'strength', 'freshness', 'floral', 'woodiness'].forEach((key) => {
+          score += 2 - Math.abs(features[key] - quizAnswers[key]);
+        });
+        score += (occasionTypes[quizAnswers.occasion] || []).filter((type) => perfume.types.includes(type)).length * 1.25;
+        score += (seasonTypes[quizAnswers.season] || []).filter((type) => perfume.types.includes(type)).length * 0.5;
+        if (favorite) {
+          score += perfume.types.filter((type) => favorite.types.includes(type)).length * 1.5;
+          score += perfume.notes.filter((note) => favorite.notes.includes(note)).length * 2;
+        } else {
+          const perfumeText = `${perfume.brand} ${perfume.name} ${perfume.notes.join(' ')}`.toLowerCase();
+          score += favoriteTokens.filter((token) => token.length > 2 && perfumeText.includes(token)).length;
+        }
+        return { perfume, score };
+      }).filter((item) => !favorite || item.perfume.id !== favorite.id)
+        .sort((first, second) => second.score - first.score)
+        .slice(0, 3);
+      const scoreCeiling = 15.5 + (favorite ? favorite.types.length * 1.5 + favorite.notes.length * 2 : favoriteTokens.filter((token) => token.length > 2).length);
+      lastRecommendations = recommendations.map((item) => ({
+        ...item,
+        matchStars: Math.max(1, Math.min(5, Math.round(item.score / scoreCeiling * 5)))
+      }));
+      const favoriteMessage = favoriteText
+        ? favorite ? `Vi fandt ${favorite.name} i kataloget og brugte dens duftfamilier som ekstra inspiration.` : 'Favoritten er ikke i demokataloget, så matchningen bygger primært på dine svar.'
+        : 'Du kan prøve testen igen senere med en yndlingsparfume for at gøre matchningen mere personlig.';
+      openModal(`<div class="eyebrow">Dine duftalternativer</div><h2 id="modal-title">Her er tre steder at begynde.</h2><p>${favoriteMessage}</p><div class="match-grid">${lastRecommendations.map(({ perfume, matchStars }) => `<article class="match-card"><button class="match-image-button" data-perfume-detail="${perfume.id}" aria-label="Se noter og beskrivelse af ${perfume.name}">${perfumeImageMarkup(perfume, 'result-image')}</button><div class="match-card-content"><h3>${escapeHtml(perfume.name)}</h3><div class="match-card-brand">${escapeHtml(perfume.brand)}</div><div class="match-score" aria-label="Matchscore ${matchStars} af 5">${'★'.repeat(matchStars)}<span class="empty-stars">${'☆'.repeat(5 - matchStars)}</span><strong>${matchStars}/5 match</strong></div><div class="match-top-label">Topnoter</div><div class="notes">${notePyramidFor(perfume).top.map((note) => `<span class="note">${escapeHtml(note)}</span>`).join('')}</div><button class="save-recommendation" data-save-recommendation="${perfume.id}">${state.saved.has(perfume.id) ? 'Gemt i Favoritter' : 'Gem i Favoritter'}</button></div></article>`).join('')}</div><p class="quiz-note">Matchstjernerne viser, hvor tæt parfumen passer på dine svar. Notepyramiden er en demovisning og bør verificeres mod parfumehusets oplysninger.</p><button class="modal-action" id="restart-quiz">Tag testen igen</button>`, true);
+      modalContent.querySelectorAll('[data-save-recommendation]').forEach((button) => button.addEventListener('click', () => {
+        const perfumeId = Number(button.dataset.saveRecommendation);
+        state.saved.add(perfumeId);
+        saveUserData();
+        button.textContent = 'Gemt i Favoritter';
+        showToast('Gemt i Favoritter');
+      }));
+      modalContent.querySelectorAll('[data-perfume-detail]').forEach((button) => button.addEventListener('click', () => openPerfumeDetail(Number(button.dataset.perfumeDetail))));
+      modalContent.querySelectorAll('[data-product-image]').forEach((image) => image.addEventListener('error', () => replaceWithScentPortrait(image), { once: true }));
+      document.getElementById('restart-quiz').addEventListener('click', startQuiz);
+    }
+    function notePyramidFor(perfume) {
+      return {
+        top: perfume.notes.slice(0, 1),
+        heart: perfume.notes.slice(1, 2),
+        base: perfume.notes.slice(2)
+      };
+    }
+    function noteOrigin(note) {
+      const normalized = note.toLowerCase();
+      const origins = [
+        { pattern: /bergamot|citrus|citron|grapefrugt|appelsin|neroli/, page: /grapefrugt/.test(normalized) ? 'Grapefruit' : /bergamot/.test(normalized) ? 'Bergamot orange' : 'Citrus', emoji: '🍋' },
+        { pattern: /ananas/, page: 'Pineapple', emoji: '🍍' },
+        { pattern: /æble/, page: 'Apple', emoji: '🍎' },
+        { pattern: /pære/, page: 'Pear', emoji: '🍐' },
+        { pattern: /jordbær|bær|litchi|kirsebær|figen/, page: /figen/.test(normalized) ? 'Common fig' : /kirsebær/.test(normalized) ? 'Cherry' : /litchi/.test(normalized) ? 'Lychee' : 'Strawberry', emoji: '🍓' },
+        { pattern: /rose|jasmin|tuberose|pæon|magnolia|orkidé|ylang|viol|iris/, page: /jasmin/.test(normalized) ? 'Jasmine' : /rose/.test(normalized) ? 'Rose' : /lavendel/.test(normalized) ? 'Lavender' : 'Flower', emoji: '🌸' },
+        { pattern: /lavendel/, page: 'Lavandula', emoji: '🪻' },
+        { pattern: /vanilje/, page: 'Vanilla', emoji: '🌼' },
+        { pattern: /kanel|ingefær|peber|safran|kardemomme|muskatnød|krydderi/, page: /ingefær/.test(normalized) ? 'Ginger' : /safran/.test(normalized) ? 'Saffron' : /kardemomme/.test(normalized) ? 'Cardamom' : 'Cinnamon', emoji: '🌶️' },
+        { pattern: /kaffe/, page: 'Coffee', emoji: '☕' },
+        { pattern: /honning|sukker|karamel|praliné|kakao|chokolade|mælk|cognac|rom|dadler/, page: /honning/.test(normalized) ? 'Honey' : /kaffe/.test(normalized) ? 'Coffee' : 'Caramel', emoji: '🍯' },
+        { pattern: /kokos/, page: 'Coconut', emoji: '🥥' },
+        { pattern: /havsalt|havnoter|salt/, page: 'Sea salt', emoji: '🌊' },
+        { pattern: /salvie|mynte|grønne noter/, page: /mynte/.test(normalized) ? 'Mint' : 'Sage', emoji: '🌿' },
+        { pattern: /træ|sandeltræ|cedertræ|birk|vetiver|patchouli|oud|egemos|cashmeran/, page: /patchouli/.test(normalized) ? 'Patchouli' : /birk/.test(normalized) ? 'Birch' : /vetiver/.test(normalized) ? 'Chrysopogon zizanioides' : /oud/.test(normalized) ? 'Agarwood' : 'Sandalwood', emoji: '🪵' },
+        { pattern: /tobak|læder|røg|røgelse|amber|moskus|ambroxan|aldehyder|benzoin|tonkabønne|kastanje|trøffel|enebær|morgenfrue/, page: /tobak/.test(normalized) ? 'Tobacco' : /kastanje/.test(normalized) ? 'Chestnut' : /trøffel/.test(normalized) ? 'Truffle' : /enebær/.test(normalized) ? 'Juniper berry' : /amber/.test(normalized) ? 'Amber' : 'Incense', emoji: '✨' }
+      ];
+      return origins.find((origin) => origin.pattern.test(normalized)) || { page: 'Perfume', emoji: '✳' };
+    }
+    function noteOriginMarkup(note) {
+      const origin = noteOrigin(note);
+      return `<figure class="note-origin"><div class="note-picture"><span aria-hidden="true">${origin.emoji}</span><img data-wiki-page="${origin.page}" alt="" loading="lazy" hidden></div><figcaption>${note}</figcaption></figure>`;
+    }
+    async function loadNotePhotos(container) {
+      const images = [...container.querySelectorAll('[data-wiki-page]')];
+      await Promise.all(images.map(async (image) => {
+        const page = image.dataset.wikiPage;
+        let source = noteImageCache.get(page);
+        if (!source) {
+          try {
+            const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page)}`);
+            if (!response.ok) return;
+            const summary = await response.json();
+            source = summary.thumbnail?.source;
+            if (!source) return;
+            noteImageCache.set(page, source);
+          } catch {
+            return;
+          }
+        }
+        image.addEventListener('load', () => { image.hidden = false; }, { once: true });
+        image.addEventListener('error', () => { image.hidden = true; }, { once: true });
+        image.src = source;
+      }));
+    }
+    function openPerfumeDetail(id) {
+      const perfume = perfumes.find((item) => item.id === id);
+      if (!perfume) return;
+      const pyramid = notePyramidFor(perfume);
+      const match = lastRecommendations.find((item) => item.perfume.id === id);
+      const communityRating = communityRatingFor(perfume.id);
+      const description = perfume.description || `En ${perfume.types.join(' og ').toLowerCase()} duftprofil med noter af ${perfume.notes.join(', ')}.`;
+      const communitySummary = communityRating
+        ? `<div class="community-average"><strong>★ ${communityRating.average.toFixed(1)}</strong><span>Demo-gennemsnit fra ${communityRating.count} eksempelprofiler · ikke en live fællesskabsrating</span></div>`
+        : '<div class="community-average"><strong>—</strong><span>Ingen fællesskabsratings endnu</span></div>';
+      const otherReviewCount = communityReviews.filter((review) => review.perfumeId === perfume.id).length;
+      openModal(`${perfumeImageMarkup(perfume, 'detail-hero')}<div class="detail-heading"><div class="eyebrow">${escapeHtml(perfume.brand)}</div><h2 id="modal-title">${escapeHtml(perfume.name)}</h2>${match ? `<div class="match-score" aria-label="Matchscore ${match.matchStars} af 5">${'★'.repeat(match.matchStars)}<span class="empty-stars">${'☆'.repeat(5 - match.matchStars)}</span><strong>${match.matchStars}/5 match</strong></div>` : ''}</div><section class="note-level"><h3>Duftfamilie</h3><div class="family-list">${perfume.types.map((family) => `<span>${escapeHtml(family)}</span>`).join('')}</div></section><section class="note-level"><h3>Beskrivelse</h3><p class="detail-copy">${escapeHtml(description)}</p><p class="filter-help">Demobeskrivelse dannet ud fra katalogets noter og duftfamilier.</p></section>${communitySummary}<button class="modal-action" id="show-other-reviews">Se andre brugeres anmeldelser (${otherReviewCount})</button><section class="note-level"><h3>Topnoter</h3><div class="note-origin-grid">${pyramid.top.map(noteOriginMarkup).join('')}</div></section><section class="note-level"><h3>Hjertenoter</h3><div class="note-origin-grid">${pyramid.heart.map(noteOriginMarkup).join('')}</div></section><section class="note-level"><h3>Bundnoter</h3><div class="note-origin-grid">${pyramid.base.map(noteOriginMarkup).join('')}</div></section><p class="detail-disclaimer">Billeder af råvarer hentes fra Wikipedias offentlige opslagsværk. Denne demo fordeler katalogets noter i en foreløbig top-, hjerte- og bundnote-pyramide; kontrollér placeringerne mod parfumens officielle oplysninger før publicering.</p><div class="detail-actions"><button class="detail-back" id="back-to-results">← Tilbage</button><button class="modal-action" id="save-detail">${state.saved.has(perfume.id) ? 'Gemt i Favoritter' : 'Gem i Favoritter'}</button></div>`, true);
+      loadNotePhotos(modalContent);
+      modalContent.querySelectorAll('[data-product-image]').forEach((image) => image.addEventListener('error', () => replaceWithScentPortrait(image), { once: true }));
+      document.getElementById('show-other-reviews').addEventListener('click', () => openOtherReviews(perfume.id));
+      document.getElementById('back-to-results').addEventListener('click', () => { closeModal(); });
+      document.getElementById('save-detail').addEventListener('click', () => {
+        if (state.saved.has(perfume.id)) state.saved.delete(perfume.id);
+        else state.saved.add(perfume.id);
+        saveUserData();
+        document.getElementById('save-detail').textContent = state.saved.has(perfume.id) ? 'Gemt i Favoritter' : 'Gem i Favoritter';
+        showToast(state.saved.has(perfume.id) ? 'Tilføjet til Favoritter' : 'Fjernet fra Favoritter');
+      });
+    }
+    function openOtherReviews(perfumeId) {
+      const perfume = perfumes.find((item) => item.id === perfumeId);
+      if (!perfume) return;
+      const reviews = communityReviews.filter((review) => review.perfumeId === perfumeId);
+      const reviewMarkup = reviews.length ? reviews.map((review) => `
+        <article class="community-review"><header><strong>${escapeHtml(review.user)} <span class="filter-help">· eksempelprofil</span></strong><span class="star">★ ${review.rating}/5</span></header><p>${escapeHtml(review.text)}</p></article>`).join('') : '<p class="profile-empty">Der er endnu ingen anmeldelser fra andre profiler på denne demo-parfume.</p>';
+      openModal(`<div class="eyebrow">Eksempelanmeldelser</div><h2 id="modal-title">${escapeHtml(perfume.name)}</h2><p>Anmeldelser fra andre profiler vises her. Eksempelprofilerne er demoindhold.</p><div class="community-average">${communityRatingFor(perfumeId) ? `<strong>★ ${communityRatingFor(perfumeId).average.toFixed(1)}</strong><span>Demo-gennemsnit · ${reviews.length} anmeldelser</span>` : '<strong>—</strong><span>Ingen ratings endnu</span>'}</div><div class="review-list">${reviewMarkup}</div><button class="modal-action" id="reviews-back">Tilbage til parfumen</button>`);
+      document.getElementById('reviews-back').addEventListener('click', () => openPerfumeDetail(perfumeId));
+    }
+    function openSearchModal() {
+      openModal(`<div class="eyebrow">Søg i Scented</div><h2 id="modal-title">Find parfumer, noter og profiler</h2><label class="search" style="width:100%;margin-top:14px"><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Søg på parfume, note, brand eller bruger" aria-label="Søg på parfume, note, brand eller bruger" autocomplete="off"></label><div class="search-results" id="global-search-results"><p class="search-empty">Skriv for at søge i parfumer, brands, noter og demo-profiler.</p></div>`);
+      const input = document.getElementById('global-search');
+      input.addEventListener('input', () => renderSearchResults(input.value));
+      modalContent.querySelector('[data-product-image]')?.addEventListener('error', (event) => replaceWithScentPortrait(event.currentTarget), { once: true });
+      input.focus();
+    }
+    function renderSearchResults(query) {
+      const container = document.getElementById('global-search-results');
+      const normalized = query.trim().toLowerCase();
+      if (!normalized) {
+        container.innerHTML = '<p class="search-empty">Skriv for at søge i parfumer, brands, noter og demo-profiler.</p>';
+        return;
+      }
+      const perfumeResults = perfumes.filter((perfume) => `${perfume.name} ${perfume.brand} ${perfume.notes.join(' ')} ${perfume.types.join(' ')}`.toLowerCase().includes(normalized)).slice(0, 12);
+      const userResults = [...new Set(communityReviews.map((review) => review.user))].filter((user) => user.toLowerCase().includes(normalized));
+      if ('julie'.includes(normalized) && Object.keys(state.ratings).length) userResults.unshift('Julie');
+      const perfumeMarkup = perfumeResults.length ? `<h3 class="search-result-heading">Parfumer, brands og noter</h3>${perfumeResults.map((perfume) => `<button class="search-result" data-search-perfume="${perfume.id}"><strong>${escapeHtml(perfume.name)}</strong><small>${escapeHtml(perfume.brand)}</small><span>${escapeHtml(perfume.notes.join(' · '))}</span></button>`).join('')}` : '';
+      const userMarkup = userResults.length ? `<h3 class="search-result-heading">Profiler</h3>${userResults.map((user) => `<button class="search-result" data-search-user="${escapeHtml(user)}"><strong>${escapeHtml(user)}</strong><small>${user === 'Julie' ? 'Din profil' : 'Eksempelprofil'}</small><span>${user === 'Julie' ? 'Dine lokale anmeldelser' : `${communityReviews.filter((review) => review.user === user).length} demoanmeldelse(r)`}</span></button>`).join('')}` : '';
+      container.innerHTML = perfumeMarkup + userMarkup || '<p class="search-empty">Ingen resultater. Prøv et andet søgeord.</p>';
+      container.querySelectorAll('[data-search-perfume]').forEach((button) => button.addEventListener('click', () => openPerfumeDetail(Number(button.dataset.searchPerfume))));
+      container.querySelectorAll('[data-search-user]').forEach((button) => button.addEventListener('click', () => openUserProfile(button.dataset.searchUser)));
+    }
+    function openUserProfile(user) {
+      if (user === 'Julie') {
+        state.view = 'profile';
+        state.profileTab = 'reviews';
+        closeModal();
+        updateNav();
+        render();
+        return;
+      }
+      const reviews = communityReviews.filter((review) => review.user === user);
+      openModal(`<div class="eyebrow">Eksempelprofil</div><h2 id="modal-title">${escapeHtml(user)}</h2><p>Demoindhold — ikke en rigtig offentlig brugerprofil.</p><div class="review-list">${reviews.map((review) => {
+        const perfume = perfumes.find((item) => item.id === review.perfumeId);
+        return `<article class="community-review"><header><strong>${escapeHtml(perfume?.name || 'Parfume')}</strong><span class="star">★ ${review.rating}/5</span></header><p>${escapeHtml(review.text)}</p></article>`;
+      }).join('')}</div>`);
+    }
+    function updateNav() {
+      document.querySelectorAll('[data-view]').forEach((button) => button.classList.toggle('active', button.dataset.view === state.view));
+      const headings = {
+        discover: ['Opdag en verden af dufte', 'Udforsk parfumer, noter og nye favoritter fra duftfællesskabet.'],
+        shelf: ['Favoritter', 'Parfumer, du har gemt og vil vende tilbage til.'],
+        profile: ['Profil', 'Dine anmeldelser, favoritter og personlige parfumeforslag.']
+      };
+      const [title, subtitle] = headings[state.view] || headings.discover;
+      document.getElementById('page-title').textContent = title;
+      document.getElementById('page-subtitle').textContent = subtitle;
+    }
+    document.getElementById('search').addEventListener('input', (event) => { state.query = event.target.value; render(); });
+    document.querySelectorAll('[data-action="search"]').forEach((button) => button.addEventListener('click', openSearchModal));
+    document.getElementById('filter-button').addEventListener('click', openFilters);
+    document.getElementById('note-filter-button').addEventListener('click', openNotePicker);
+    document.querySelectorAll('[data-action="settings"]').forEach((button) => button.addEventListener('click', openSettings));
+    document.querySelectorAll('[data-profile-tab]').forEach((button) => button.addEventListener('click', () => {
+      state.profileTab = button.dataset.profileTab;
+      renderProfile();
+    }));
+    document.querySelectorAll('.chip').forEach((chip) => chip.addEventListener('click', () => {
+      state.filter = chip.dataset.filter;
+      document.querySelectorAll('.chip').forEach((item) => item.classList.toggle('active', item === chip));
+      render();
+    }));
+    document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => { state.view = button.dataset.view; updateNav(); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+    document.querySelectorAll('[data-action="quiz"]').forEach((button) => button.addEventListener('click', startQuiz));
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    backdrop.addEventListener('click', (event) => { if (event.target === backdrop) closeModal(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+    updateFilterButtons();
+    updateNav();
+    render();
+  </script>
+</body>
+</html>
